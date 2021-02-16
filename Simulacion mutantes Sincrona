@@ -1,15 +1,13 @@
-### FUNCION 1 ###
-def get_truth_table_mut(nodos,    # lista 
-                        edo_inicial,
-                        pasos,
-                        reglas,
-                        gen_mut, # lista p.e.: ['YAB','miR']
-                        edo_gen_mut): # lista p.e.: ['0','0']
-    '''Generar de forma Síncrona 
-     la tabla de verdad de un edo inicial con un gen siempre en un edo             específico''' 
+def get_truth_table_mut(nodos,         #lista de nombres de nodos p.e.: ['YAB','ARF3','miR','KAN','REV','AS12']
+                        edo_inicial,   #string con edos iniciales de todos los nodos p.e.: '111111'
+                        pasos,         #integer con max de pasos en el tiempo que se correra la tabla p.e.: 50
+                        reglas,        #string con reglas logicas de cada nodo separadas con ';' p.e.: '~AS12;~AS12;(~REV&AS12);YAB;~miR;(REV&~KAN)'
+                        gen_mut,       #lista de nodos mutados p.e.: ['YAB','miR']
+                        edo_gen_mut):  #lista de edos nodos mutados p.e.: ['0','0']
+    '''Generar de forma Síncrona la tabla de verdad de un edo inicial 
+     con uno o mas nodos siempre en un edo específico'''
 
-
-    #diccionario con los edos en cada t (resultado final a entregar)
+    #diccionario con los edos en cada tiempo (resultado final a entregar)
     truth_tables = {'t0': ''}
     for x in nodos:
         if x in gen_mut:
@@ -61,16 +59,15 @@ def get_truth_table_mut(nodos,    # lista
 
 
 ##################################################
-
-### FUNCIÓN 2 ###
-def get_attrs_mut(nodos, #lista por ejemplo ['a','b','c']
-              pasos, #hasta qué t+x, tiene que ser un número p.e. 10
-              reglas, #string con reglas separadas por ; p.e. '~c;a&c;b'
-              gen_mut, #lista p.e.: ['YAB','miR']
-              edo_gen_mut # lista p.e.: ['0','0']
+def get_attrs_mut(nodos,   #lista de nombres de nodos p.e.: ['YAB','ARF3','miR','KAN','REV','AS12']
+              pasos,       #integer con max de pasos en el tiempo que se correra la tabla p.e.: 50
+              reglas,      #string con reglas logicas de cada nodo separadas con ';' p.e.: '~AS12;~AS12;(~REV&AS12);YAB;~miR;(REV&~KAN)'
+              gen_mut,     #lista de nodos mutados p.e.: ['YAB','miR']
+              edo_gen_mut  #lista de edos nodos mutados p.e.: ['0','0']
              ):
-    '''Sacar los attrs de todos los edos iniciales para una mutante de forma Síncrona.
-       Regresa 2 variables: attrs y tablas de verdad'''
+    '''Sacar los attrs de todos los edos iniciales posibles
+    para una mutante de forma Síncrona.
+    Regresa 2 variables: attrs y tablas de verdad'''
     
     #crear todos los edos iniciales
     tabla = list(itertools.product([1,0], repeat = len(nodos))) #crear todos los posibles edos iniciales
