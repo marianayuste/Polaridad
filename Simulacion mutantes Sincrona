@@ -1,0 +1,135 @@
+### FUNCION 1 ###
+def get_truth_table_mut(nodos,    # lista 
+                        edo_inicial,
+                        pasos,
+                        reglas,
+                        gen_mut, # lista p.e.: ['YAB','miR']
+                        edo_gen_mut): # lista p.e.: ['0','0']
+    '''Generar de forma Síncrona 
+     la tabla de verdad de un edo inicial con un gen siempre en un edo             específico''' 
+
+
+    #diccionario con los edos en cada t (resultado final a entregar)
+    truth_tables = {'t0': ''}
+    for x in nodos:
+        if x in gen_mut:
+            truth_tables['t0'] = truth_tables['t0'] + edo_gen_mut[gen_mut.index(x)]
+        else:
+            truth_tables['t0'] = truth_tables['t0'] + edo_inicial[nodos.index(x)]
+
+    for t in range(1,pasos): #hasta cuántos pasos en el tiempo
+
+        #edo en el tiempo anterior
+        edos = {}
+        for x in range(len(nodos)):
+            edos[nodos[x]] = truth_tables['t%s' %(t-1)][x]
+
+        #crear dic dentro de truth_tables del nuevo tiempo
+        truth_tables['t%s' %t] = ''
+
+        #generar el nuevo edo
+        r = reglas.split(';')
+        nuevo = ''
+        for x in range(len(nodos)):
+            #cambiar ~,& y | por not,and y or
+            regla = r[x].replace('~', 'not ').replace('&',' and ').replace('|',' or ')
+
+            #si es el gen mutado poner el edo igual siempre
+            if nodos[x] in gen_mut:
+                regla = edo_gen_mut[gen_mut.index(nodos[x])]
+                #guardar edo del gen x
+                nuevo = nuevo + regla
+            #los genes no mutados siguen lo mismo:
+            #cambiar nombres de nodos por sus edos en t anterior
+            else:
+                for y in nodos:
+                    regla = regla.replace(y, edos[y])
+            #guardar edo del gen x
+                nuevo = nuevo + str(eval(regla)).replace('True','1').replace('False','0')
+
+        #parar si el edo nuevo ya está
+        for a in truth_tables:
+            if nuevo == truth_tables[a]:
+                #guardar este último edo
+                truth_tables['t%s' %t] = nuevo
+                #terminar la función
+                return truth_tables
+        truth_tables['t%s' %t] = nuevo
+        
+        if t == pasos-1:
+            return 'se requieren mas pasos para edo inicial %s' %edo_inicial
+
+
+##################################################
+
+### FUNCIÓN 2 ###
+def get_attrs_mut(nodos, #lista por ejemplo ['a','b','c']
+              pasos, #hasta qué t+x, tiene que ser un número p.e. 10
+              reglas, #string con reglas separadas por ; p.e. '~c;a&c;b'
+              gen_mut, #lista p.e.: ['YAB','miR']
+              edo_gen_mut # lista p.e.: ['0','0']
+             ):
+    '''Sacar los attrs de todos los edos iniciales para una mutante de forma Síncrona.
+       Regresa 2 variables: attrs y tablas de verdad'''
+    
+    #crear todos los edos iniciales
+    tabla = list(itertools.product([1,0], repeat = len(nodos))) #crear todos los posibles edos iniciales
+    
+    #guardar el índice donde se encuentran los genes mutados en nodos y tabla
+    mut = []
+    for a in gen_mut:
+        mut.append(nodos.index(a))
+
+    #guardar sólo los edos que coincidan con los edos de los genes mutados
+    lista = []
+    if len(gen_mut) == 1:
+        for a in range(len(tabla)):
+            if str(tabla[a][mut[0]]) == edo_gen_mut[0]:
+                lista.append(tabla[a])
+    elif len(gen_mut) == 2:
+        for a in range(len(tabla)):
+            if str(tabla[a][mut[0]]) == edo_gen_mut[0] and str(tabla[a][mut[1]]) == edo_gen_mut[1]:
+                lista.append(tabla[a])
+    elif len(gen_mut) >= 3:
+        return 'la función puede hasta 2 genes mutantes'
+    
+    #convertirlos a string
+    edos_iniciales={}
+    for a in range(len(lista)):
+        edos_iniciales[a] = ''
+        for b in lista[a]:
+            edos_iniciales[a] = edos_iniciales[a] + str(b)
+    truth_tables = []
+    for x in edos_iniciales:
+        truth_tables.append(get_truth_table_mut(nodos, edos_iniciales[x], pasos, reglas, gen_mut, edo_gen_mut))
+    
+    if any('se requieren' in k for k in truth_tables):
+        return 'se requieren mas pasos'
+        
+    # Sacar sólo los atractores (los últimos edos de attrs)
+    #tomar en cuenta que pueden haber attr de más de 1 edo
+    #si el attr es de 1 edo guardarlo en attrs, si es de más de 1 guardar los edos posibles en attrs
+    attrs = []
+    for a in truth_tables:
+        if a[list(a.keys())[-1]] == a[list(a.keys())[-2]]: #si es igual al edo anterior (attr de 1 edo)
+            attrs.append(a[max(a)])
+        elif a[list(a.keys())[-1]] == a[list(a.keys())[-3]]: #si es igual al edo anterior anterior (2 edos)
+            #si ya esta ese attr cíclico pero con distinto orden:
+            if (a[list(a.keys())[-2]] + '-' + a[list(a.keys())[-1]]) in attrs: #si ya está uno guardado al revés (el edo 2 primero que el edo 1)
+                attrs.append( a[list(a.keys())[-2]] + '-' + a[list(a.keys())[-1]] ) #guardarlo al revés
+            else:
+                attrs.append( a[list(a.keys())[-1]] + '-' + a[list(a.keys())[-2]] ) #si no, guardarlo normal
+        else:
+            attrs.append('3 edos o mas')
+
+    #reunir los attrs iguales en un mismo grupo para contarlos, sacar su vasija de atracción y resumir resultados
+    attrs_final = {}
+    for a in attrs:
+        if a not in attrs_final:
+            attrs_final[a] = 1
+        else:
+            attrs_final[a] = attrs_final[a]+1
+    
+    return attrs_final, truth_tables
+
+
