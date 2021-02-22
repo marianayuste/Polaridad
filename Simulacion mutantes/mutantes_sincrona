@@ -59,9 +59,7 @@ def get_attrs_mut(nodos, #lista de nombres de nodos p.e.: ['YAB','ARF3','miR','K
               edo_gen_mut #lista de edos nodos mutados p.e.: ['0','0']
              ):
              
-             
-    '''Generar de forma síncrona
-    los attrs de todos los edos iniciales para una mutante
+    '''Generar de forma síncrona los attrs de todos los edos iniciales para una mutante
     regresa 2 variables: attrs y tablas de verdad'''
     
     #crear todos los edos iniciales
