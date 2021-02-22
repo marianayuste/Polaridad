@@ -1,46 +1,38 @@
-### FUNCIÓN 3 ###
 def get_truth_table_asyn_mut(nodos,
                              edo_inicial,
                              pasos,
                              reglas,
                              gen_mut, # lista p.e.: ['YAB','miR']
                              edo_gen_mut, # lista p.e.: ['0','0']
-                             attrs_sincrona #lista attrs punto fijo en síncrona p.e. ['100','000']
+                             attrs_sincrona #lista attrs punto fijo de la mutante en síncrona p.e. ['100','000']
                             ):
     
     '''Generar de forma Asíncrona la tabla de verdad de un edo inicial 
     con un gen siempre en un edo específico'''
 
 
-    #diccionario con los edos en cada t (resultado final a entregar)
-    truth_tables = {'t0': ''}
-    for x in nodos:
-        if x in gen_mut:
-            truth_tables['t0'] = truth_tables['t0'] + edo_gen_mut[gen_mut.index(x)]
-        else:
-            truth_tables['t0'] = truth_tables['t0'] + edo_inicial[nodos.index(x)]
-
-    for t in range(1,pasos): #hasta cuántos pasos en el tiempo
-
-        #edo en el tiempo anterior
+    #lista con los edos en cada t (resultado final a entregar)
+    truth_tables = [edo_inicial]
+        #NOTA: no cambio el valor de los nodos mutados porque 
+        #en get_attrs_asyn_mut se usan unicamente edos iniciales que cumplan
+        #con el valor de la mutante
+        
+    for t in range(1,pasos):
+        #edo de cada nodo en el tiempo anterior
         edos = {}
         for x in range(len(nodos)):
-            edos[nodos[x]] = truth_tables['t%s' %(t-1)][x]
-
-        #crear dic dentro de truth_tables del nuevo tiempo
-        truth_tables['t%s' %t] = ''
-
-        #generar el nuevo edo
-        r = reglas.split(';')
-        nuevo = ''
-        
-        #escoger el nodo que se usará en el tiempo t
-        #para evitar pasos, elegir de los nodos que no son mutados
+            edos[nodos[x]] = truth_tables[t-1][x]
+    
+        #escoger el nodo que se modificara
+        #para reducir pasos elegir de los nodos que no son mutados
         nodos_sin_gen_mut = [] #ya son los lugares en números, no son nombres
         for a in range(len(nodos)):
             if nodos[a] not in gen_mut:
                 nodos_sin_gen_mut.append(a)
         x = random.choice(nodos_sin_gen_mut)
+        
+        #generar nuevo edo del nodo seleccionado
+        r = reglas.split(';')
         #cambiar ~,& y | por not,and y or
         regla = r[x].replace('~', 'not ').replace('&',' and ').replace('|',' or ')
         #cambiar nombres de nodos por sus edos en t
@@ -48,109 +40,29 @@ def get_truth_table_asyn_mut(nodos,
             regla = regla.replace(y, edos[y])
 
         #guardar edo nuevo de cada gen dependiendo el caso
+        nuevo = ''
         for z in range(len(nodos)):
-            #si es el gen mutado dejar el edo_gen_mut:
+            #si es un gen mutado dejar el edo_gen_mut:
             if nodos[z] in gen_mut:
                 nuevo = nuevo + edo_gen_mut[gen_mut.index(nodos[z])]
-            #si es el nodo x poner la regla (x no va a ser el gen mutado porque lo elegi solo de los genes no mutados)
+            #si es el nodo x poner la regla
             elif z == x:
                 nuevo = nuevo + str(eval(regla)).replace('True','1').replace('False','0')
-            #si no es el nodo x ni está mutado:
+            #si no es el nodo x ni está mutado poner el valor en tiempo t
             else:
                 nuevo = nuevo + edos[nodos[z]]
 
         #guardar este último edo
-        truth_tables['t%s' %t] = nuevo
+        truth_tables.append(nuevo)
         
         #Parar si se llega a un edo correspondiente a un attr de punto fijo en Síncrona
-        if nuevo == truth_tables['t%s' %(t-1)]: #para que se repita una vez y facilite la función get_attrs
+        if nuevo == truth_tables[t-1]: #si ya se repitio una vez (esto facilita la función get_attrs)
             if nuevo in attrs_sincrona:
                 #terminar la funcion
                 return truth_tables
 
         
     return truth_tables
-
-
-##################################################
-
-
-### FUNCIÓN 4 ###
-def get_attrs_asyn_mut(nodos, #lista por ejemplo ['a','b','c']
-              pasos, #hasta qué t+x, tiene que ser un número p.e. 50
-              reglas, #string con reglas separadas por ; p.e. '~c;a&c;b'
-              gen_mut, #lista p.e.: ['YAB','miR']
-              edo_gen_mut, # lista p.e.: ['0','0']
-                attrs_sincrona, #lista de attrs de PUNTO FIJO generados en sincrona p.e. ['100','000']
-                repeticiones # suma de tiempo en que se debe repetir un edo para ser attr p.e. 10
-             ):
-    '''Sacar de forma Asíncrona los attrs de todos los edos iniciales para una mutante
-    regresa 2 variables: attrs y tablas de verdad'''
-    
-    #crear todos los edos iniciales
-    tabla = list(itertools.product([1,0], repeat = len(nodos))) #crear todos los posibles edos iniciales
-    
-    #guardar el indice donde se encuentran los genes mutados en nodos y tabla
-    mut = []
-    for a in gen_mut:
-        mut.append(nodos.index(a))
-
-    #guardar sólo los edos que coincidan con los edos de los genes mutados
-    lista = []
-    if len(gen_mut) == 1:
-        for a in range(len(tabla)):
-            if str(tabla[a][mut[0]]) == edo_gen_mut[0]:
-                lista.append(tabla[a])
-    elif len(gen_mut) == 2:
-        for a in range(len(tabla)):
-            if str(tabla[a][mut[0]]) == edo_gen_mut[0] and str(tabla[a][mut[1]]) == edo_gen_mut[1]:
-                lista.append(tabla[a])
-    elif len(gen_mut) >= 3:
-        return 'la funcion puede hasta 2 genes mutados'
-    
-    #convertirlos a string
-    edos_iniciales={}
-    for a in range(len(lista)):
-        edos_iniciales[a] = ''
-        for b in lista[a]:
-            edos_iniciales[a] = edos_iniciales[a] + str(b)
-            
-    #generar las tablas de verdad
-    truth_tables = []
-    for x in edos_iniciales:
-        truth_tables.append(get_truth_table_asyn_mut(nodos, edos_iniciales[x], pasos, reglas, gen_mut, edo_gen_mut, attrs_sincrona))
-    
         
-    # Sacar sólo los atractores
-        #nota: esta función sólo guardará los attrs PF, los cíclicos no se buscarán
-        #    sólo se nombrarán como tal
-    attrs = []
-    for a in truth_tables:
-        #si no se llegó al max de pasos, ent es un attr PF asegurado por Sin
-        if len(a) < pasos:
-            attrs.append(a[list(a.keys())[-1]])
-        #si se llegó al max de pasos
-        else:
-            #guardar los últimos edos (según el número de repeticiones pedido)
-            rep = []
-            n = -1
-            for b in range(repeticiones):
-                rep.append(a[list(a.keys())[n]])
-                n-=1
-            #si los últimos edos son iguales, es un attr PF
-            if all(k == rep[0] for k in rep):
-                attrs.append(rep[0])
-            #si no, tomarlo como ciclico o trap-space
-            else:
-                attrs.append('ciclico o trap-space 3') #pongo el 3 porque lo he usado como reperencia de ciclicos en el pasado
-
-
-    #reunir los attrs iguales en un mismo grupo para contarlos, sacar su vasija de atracción y resumir resultados
-    attrs_final = {}
-    for a in attrs:
-        if a not in attrs_final:
-            attrs_final[a] = 1
-        else:
-            attrs_final[a] = attrs_final[a]+1
-    
-    return attrs_final, truth_tables
+ejemplo = get_truth_table_asyn_mut(['YAB','ARF3','miR'], '111', 100, '~miR;YAB&miR;ARF3', ['YAB'], ['0'],['000'])
+ejemplo
