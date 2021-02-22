@@ -49,3 +49,63 @@ def get_truth_table_mut(nodos,         #lista de nombres de nodos p.e.: ['YAB','
         #avisar si se llego al max numero de pasos sin encontrar un attr
         if t == pasos-1:
             return 'se requieren mas pasos para edo inicial %s' %edo_inicial
+
+
+
+def get_attrs_mut(nodos, #lista de nombres de nodos p.e.: ['YAB','ARF3','miR','KAN','REV','AS12']
+              pasos, #integer con max de pasos en el tiempo que se correra la tabla p.e.: 50
+              reglas, #string con reglas logicas de cada nodo separadas con ';' p.e.: '~AS12;~AS12;(~REV&AS12);YAB;~miR;(REV&~KAN)'
+              gen_mut, #lista de nodos mutados p.e.: ['YAB','miR']
+              edo_gen_mut #lista de edos nodos mutados p.e.: ['0','0']
+             ):
+             
+             
+    '''Generar de forma síncrona
+    los attrs de todos los edos iniciales para una mutante
+    regresa 2 variables: attrs y tablas de verdad'''
+    
+    #crear todos los edos iniciales
+    tabla = list(itertools.product([1,0], repeat = len(nodos)))
+    #guardar los que cumplan con los valores de nodos mutados
+    quitar = []
+    for a in tabla:
+        for b in range(len(gen_mut)):
+            if a[nodos.index(gen_mut[b])] != int(edo_gen_mut[b]):
+                quitar.append(a)
+    lista = [k for k in tabla if k not in quitar]
+    #convertirlos a string
+    edos_iniciales = []
+    for a in range(len(lista)):
+        e = ''
+        for b in lista[a]:
+            e = e + str(b)
+        edos_iniciales.append(e)
+    
+    #Correr todos los edos iniciales usando get_truth_table_mut
+    truth_tables = [] #lista de las truth tables para cada edo inicial
+    for x in edos_iniciales:
+        truth_tables.append(get_truth_table_mut(nodos, x, pasos, reglas, gen_mut, edo_gen_mut))
+    if any('se requieren' in k for k in truth_tables):
+        return 'se requieren mas pasos'
+    
+    #Guardar sólo los edos pertenecientes a los attrs:
+    attrs = [] #lista con todos los attrs de la red
+    for a in truth_tables:
+        edo_final = a[-1] #el último edo
+        #seleccionar desde la 1ra vez que aparece el edo_final hasta antes de que vuelva a aparecer al final
+        l = a[a.index(edo_final):-1] #lista con edos del attr actual
+        #unir todos los edos en un solo string, separados por un '-'
+        atractor = ''
+        for b in sorted(l): #acomodo por orden pues no me interesan los attrs ciclicos
+            atractor = atractor + b + '-'
+        attrs.append(atractor[:-1])
+
+    #reunir los attrs iguales en un mismo grupo para contarlos, sacar su vasija de atracción y resumir resultados
+    attrs_final = {}
+    for a in attrs:
+        if a not in attrs_final:
+            attrs_final[a] = 1
+        else:
+            attrs_final[a] += 1
+    
+    return attrs_final, truth_tables
