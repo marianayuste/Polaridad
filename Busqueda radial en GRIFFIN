@@ -4,10 +4,10 @@ genes = {YAB,ARF3,miR,KAN,REV,AS12}
 ### interacciones obligatorias
 known = {AS12-|ARF3,AS12-|miR,REV-|miR,miR-|REV,AS12-|YAB,KAN-|AS12}
 ### interacciones hipoteticas
-hypothetical = {AS12->AS12,REV-|REV,ARF3-|YAB,ARF3->YAB,REV->AS12,YAB->AS12,YAB-|AS12,ARF3-|ARF3,miR->ARF3,REV->ARF3,REV-|ARF3,ARF3->REV,ARF3-|REV,REV-|KAN,KAN-|KAN,YAB->KAN,AS12-|KAN,ARF3->KAN,KAN-|ARF3,KAN-|miR,KAN-|REV,KAN->YAB}
+hypothetical = {REV-|REV,ARF3-|YAB,ARF3->YAB,REV->AS12,YAB->AS12,YAB-|AS12,ARF3-|ARF3,miR->ARF3,REV->ARF3,REV-|ARF3,ARF3->REV,ARF3-|REV,REV-|KAN,KAN-|KAN,YAB->KAN,AS12-|KAN,ARF3->KAN,KAN-|ARF3,KAN-|miR,KAN-|REV,KAN->YAB}
 
 ### atractores aceptados
-fixed-points()={**0011,1111*0}
+fixed-points()={*00011,1111*0}
 
 ### opciones
 allow.ambiguity = true
