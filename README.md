@@ -1,12 +1,11 @@
-# Polaridad
-Códigos empleados en el análisis de la RRG de la polaridad aB-aD en primordio de hoja de _Arabidopsis thaliana_
+# Ab-ad Polarity
+Codes used in the GRN analysis of aB-aD polarity in _Arabidopsis thaliana_ leaf primordium
 
-## Archivos:
+## Documents:
 
-#### - Búsqueda radial en GRIFFIN:
-Archivo que se usó para hacer una búsqueda radial en Griffin permitiendo hasta 4 interacciones hipotéticas (radio 4). Ver detalles en http://turing.iimas.unam.mx/griffin/index.html
+#### - radial_exploration.grf
+Code used for the radial search in Griffin allowing up to 4 hypothetical interactions (radius 4). Explanation of the input file requirements for Griffin as well as Griffin instalation can be found at [http://turing.iimas.unam.mx/griffin/index.html](https://turing.iimas.unam.mx/griffin/guide.html)
 
-
-#### - Simulacion mutantes:
-Funciones creadas en Python para simular mutantes en modelos obtenidos por Griffin en la exploración radial. 
-El archivo mutantes_sincrona contiene a las funciones que generan mutantes usando una actualización Síncrona, el archivo mutantes_asincrona a las funciones que usan una Asíncrona.
+#### - Mutant simulations:
+Python functions defined to simulate mutants in the boolean networks obtained by Griffin.
+The file synchronous_mutants contains the functions that generate mutants using a Synchronous update, the file asynchronous_mutants the functions that use an Asynchronous one.
