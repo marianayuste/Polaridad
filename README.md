@@ -1,5 +1,5 @@
 # Ab-ad Polarity
-Codes used in the GRN analysis of aB-aD polarity in _Arabidopsis thaliana_ leaf primordium
+Codes used in the analysis of the GNR behind aB-aD polarity in _Arabidopsis thaliana_ leaf primordium
 
 ## Documents:
 
